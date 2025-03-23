@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Snake Chan</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: Arial, sans-serif;
+            background-color: #333;
+            color: white;
+        }
+
+        canvas {
+            border: 5px solid red;
+            width: 400px; /* Set width for square canvas */
+            height: 400px; /* Set height for square canvas */
+        }
+
+        #scoreBoard {
+            margin-top: 10px;
+        }
+
+        #replayButton {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #555;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        #replayButton:hover {
+            background-color: #777;
+        }
+
+        .description {
+            position: absolute;
+            left: 10px;
+            top: 50px;
+            width: 200px;
+            color: #333;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .character-art {
+            position: absolute;
+            right: 160px; /* Move 2cm to the left */
+            top: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .head {
+            width: 30px;
+            height: 30px;
+            background-color: #ffcc00;
+            border-radius: 50%;
+            position: relative;
+        }
+
+        .eyes {
+            position: absolute;
+            top: 8px;
+            left: 5px;
+            display: flex;
+            justify-content: space-between;
+            width: 20px;
+        }
+
+        .eye {
+            width: 6px;
+            height: 6px;
+            background-color: #000;
+            border-radius: 50%;
+        }
+
+        .body {
+            width: 20px;
+            height: 40px;
+            background-color: #00ff00;
+            border-radius: 10px;
+            margin-top: -5px;
+        }
+
+        .tail {
+            width: 10px;
+            height: 20px;
+            background-color: #00cc00;
+            border-radius: 5px;
+            margin-top: -5px;
+        }
+
+        .food {
+            width: 15px;
+            height: 15px;
+            background-color: #ff0000;
+            border-radius: 50%;
+            margin: 5px;
+        }
+
+        /* Game Over Message Styles */
+        .game-over {
+            position: absolute;
+            right: 178.9px; /* Move 0.3cm to the left */
+            top: 250px; /* Position below the character */
+            background-color: rgba(255, 0, 0, 0.8); /* Red background */
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            display: none; /* Hidden by default */
+            font-size: 16px;
+            text-align: center;
+        }
+
+        /* Replaying Message Styles */
+        .replaying {
+            position: absolute;
+            right: 178.9px; /* Same position as game over */
+            top: 250px; /* Same position as game over */
+            background-color: rgba(0, 255, 0, 0.8); /* Green background */
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            display: none; /* Hidden by default */
+            font-size: 16px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>The Snake Chan</h1>
+    <div class="description">
+        <h2>Description</h2>
+        <p>Snake Chan is an engaging game where players navigate a charming snake through a vibrant landscape, collecting food and avoiding obstacles.</p>
+        <p>Collect Score boosters within 6 seconds, that appear less often for more rewards!</p>
+        <p>Good Luck!</p>
+    </div>
+    <canvas id="gameCanvas" width="400" height="400"></canvas> <!-- Set width and height to 400 for a square -->
+    <div id="scoreBoard">
+        <p>Score: <span id="score">0</span></p>
+        <p>High Score: <span id="highScore">0</span></p>
+    </div>
+    <button id="replayButton" style="display: none;">Replay</button>
+    <div class="character-art">
+        <div class="head">
+            <div class="eyes">
+                <div class="eye"></div>
+                <div class="eye"></div>
+            </div>
+        </div>
+        <div class="body"></div>
+        <div class="tail"></div>
+        <div class="food"></div>
+    </div>
+
+    <!-- Game Over Message -->
+    <div class="game-over" id="gameOverMessage">Game Over!</div>
+    <!-- Replaying Message -->
+    <div class="replaying" id="replayingMessage">Replaying...</div>
+
+    <script src="script.js"></script>
+</body>
+</html>
