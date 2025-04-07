@@ -6,7 +6,7 @@ const replayButton = document.getElementById('replayButton');
 const gameOverMessage = document.getElementById('gameOverMessage'); // Get the game over message element
 const replayingMessage = document.getElementById('replayingMessage'); // Get the replaying message element
 
-let snake, direction, food, bigFood, score, highScore, gameInterval, bigFoodInterval;
+let snake, direction, food, bigFood, score, highScore, bigFoodInterval;
 let bigFoodVisible = false;
 let bigFoodColor = 'gold'; // Initial color for big food
 let colorChangeInterval;
@@ -21,18 +21,39 @@ let speedIncreaseInterval; // Interval for increasing speed after eating big foo
 // Array of colors for the snake's body segments
 const colors = ['green', 'lightgreen', 'yellow', 'orange', 'red', 'purple', 'blue', 'cyan'];
 
+let lastRenderTime = 0; // Tracks the last time the game was rendered
+
+function gameLoop(currentTime) {
+    const secondsSinceLastRender = (currentTime - lastRenderTime) / 1000;
+
+    if (secondsSinceLastRender < 1 / (1000 / snakeSpeed)) {
+        requestAnimationFrame(gameLoop); // Skip this frame if not enough time has passed
+        return;
+    }
+
+    lastRenderTime = currentTime;
+
+    draw(); // Call the draw function to update the game
+    if (!isGameOver()) {
+        requestAnimationFrame(gameLoop); // Continue the game loop
+    }
+}
+
 function initGame() {
     snake = [{ x: 10, y: 10 }];
     direction = { x: 0, y: 0 };
     food = generateFood();
     score = 0;
     bigFoodVisible = false;
+    snakeSpeed = 150; // Reset snake speed to its initial value
     updateScoreDisplay();
     replayButton.style.display = 'none';
     gameOverMessage.style.display = 'none'; // Hide game over message
     replayingMessage.style.display = 'none'; // Hide replaying message
-    gameInterval = setInterval(draw, snakeSpeed);
+    if (speedIncreaseInterval) clearInterval(speedIncreaseInterval); // Clear any existing speed increase interval
     bigFoodInterval = setInterval(showBigFood, 30000); // Show big food every 30 seconds
+    startSpeedIncrease(); // Start the speed increase logic
+    requestAnimationFrame(gameLoop); // Start the game loop
 }
 
 function generateFood() {
@@ -138,8 +159,7 @@ function draw() {
     }
 
     // Check for wall collision or self-collision
-    if (head.x <  0 || head.x >= canvas.width / 20 || head.y < 0 || head.y >= canvas.height / 20 || collision(head)) {
-        clearInterval(gameInterval);
+    if (isGameOver()) {
         clearInterval(bigFoodInterval); // Stop the big food interval
         clearInterval(timerInterval); // Stop the big food timer
         clearInterval(colorChangeInterval); // Stop color changing interval
@@ -157,8 +177,13 @@ function draw() {
 }
 
 function isTouchingBigFood(head, bigFood) {
-    const distance = Math.sqrt(Math.pow(head.x * 20 - (bigFood.x * 20 + 18), 2) + Math.pow(head.y * 20 - (bigFood.y * 20 + 18), 2));
-    return distance < 30; // Adjust the threshold as needed
+    const snakeHeadCenter = { x: head.x * 20 + 9, y: head.y * 20 + 9 }; // Center of the snake's head
+    const bigFoodCenter = { x: bigFood.x * 20 + 18, y: bigFood.y * 20 + 18 }; // Center of the big food
+    const distance = Math.sqrt(
+        Math.pow(snakeHeadCenter.x - bigFoodCenter.x, 2) +
+        Math.pow(snakeHeadCenter.y - bigFoodCenter.y, 2)
+    );
+    return distance < 18 + 9; // Sum of the radii (big food radius + snake head radius)
 }
 
 function collision(head) {
@@ -206,13 +231,26 @@ initGame();
 
 // Speed increase logic
 function startSpeedIncrease() {
-    // Clear any existing speed increase interval
-    clearInterval(speedIncreaseInterval);
+    const speedIncreaseIntervalTime = 30000; // 30 seconds
+    const speedIncreaseAmount = 10; // Decrease snakeSpeed by 10ms each time
+    const minSpeed = 50; // Minimum speed (maximum difficulty)
 
-    // Increase speed every 10 seconds
+    // Clear any existing interval to avoid multiple intervals running
+    if (speedIncreaseInterval) clearInterval(speedIncreaseInterval);
+
+    // Gradually increase speed every 30 seconds
     speedIncreaseInterval = setInterval(() => {
-        snakeSpeed = Math.max(50, snakeSpeed - 10); // Decrease interval to increase speed, minimum 50ms
-        clearInterval(gameInterval); // Clear the existing game interval
-        gameInterval = setInterval(draw, snakeSpeed); // Restart the game interval with new speed
-    }, 10000); // Increase speed every 10 seconds
+        snakeSpeed = Math.max(minSpeed, snakeSpeed - speedIncreaseAmount); // Decrease interval to increase speed
+    }, speedIncreaseIntervalTime);
+}
+
+function isGameOver() {
+    const head = snake[0];
+    return (
+        head.x < 0 ||
+        head.x >= canvas.width / 20 ||
+        head.y < 0 ||
+        head.y >= canvas.height / 20 ||
+        collision(head)
+    );
 }
